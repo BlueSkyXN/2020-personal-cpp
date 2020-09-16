@@ -1,20 +1,83 @@
-ï»¿// GHAnalysis.cpp : æ­¤æ–‡ä»¶åŒ…å« "main" å‡½æ•°ã€‚ç¨‹åºæ‰§è¡Œå°†åœ¨æ­¤å¤„å¼€å§‹å¹¶ç»“æŸã€‚
-//
+#include "GHAnalysis.h"
 
-#include <iostream>
-
-int main()
+//³õÊ¼»¯£¬´«ÈëjsonÎÄ¼şÂ·¾¶²¢¼ÓÔØ,²¢µÃµ½vec_JsonData
+//jsonFilePath£º±íÊ¾ĞèÒª½âÎöµÄjsonÎÄ¼şµÄÂ·¾¶
+bool GHAnalysis::Init_GHAnalysis(string jsonFilePath)
 {
-    std::cout << "Hello World!\n";
+	fstream  file(jsonFilePath);//´´½¨Ò»¸öfstreamÎÄ¼şÁ÷¶ÔÏó
+	if (!file.is_open())  //ÅĞ¶ÏÎÄ¼şÊÇ·ñ±»³É¹¦´ò¿ª
+	{
+		return false;     //Èç¹ûÃ»´ò¿ª·µ»Øfalse
+	}
+	string  line; //±£´æ¶ÁÈëµÄÃ¿Ò»ĞĞ
+	Json::Reader reader;
+	Json::Value root;
+	while (getline(file, line))//»á×Ô¶¯°Ñ\n»»ĞĞ·ûÈ¥µô 
+	{
+		reader.parse(line, root);  //½âÎö¶ÁÈ¡µ½µÄÒ»ĞĞjsonÊı¾İ
+		vec_JsonData.push_back(root);      //½«½âÎöºóµÄjsonÊı¾İ´æÈëÈİÆ÷ÖĞ
+	}
+	return true;
 }
 
-// è¿è¡Œç¨‹åº: Ctrl + F5 æˆ–è°ƒè¯• >â€œå¼€å§‹æ‰§è¡Œ(ä¸è°ƒè¯•)â€èœå•
-// è°ƒè¯•ç¨‹åº: F5 æˆ–è°ƒè¯• >â€œå¼€å§‹è°ƒè¯•â€èœå•
+//»ñÈ¡Ö¸¶¨ÓÃ»§µÄÖ¸¶¨ÊÂ¼şµÄÊıÁ¿
+//´´½¨Ò»¸ö´øÁ½¸ö²ÎÊı£¬·µ»ØÖµÎªintµÄº¯Êı
+//strUserName£ºĞèÒª²éÑ¯µÄÓÃ»§Ãû£» strEventType£ºĞèÒª²éÑ¯µÄÊÂ¼şÀàĞÍÃû
+int GHAnalysis::CheckUserEventNumber(string strUserName, string strEventType) 
+{
+	int nUserEventNumber = 0;  //³õÊ¼»¯Ö¸¶¨ÓÃ»§µÄÖ¸¶¨ÊÂ¼şµÄÊıÁ¿
+	for(int i = 0; i<vec_JsonData.size();i++)  //vec_JsonData.size()£º»ñÈ¡ÈİÆ÷´óĞ¡£¬Ö±µ½²éÕÒÍêÈİÆ÷ÖĞËùÓĞ²ÎÊı
+	{
+		//.asString():½«Êı¾İ×ª»»ÎªstringÀàĞÍ
+		if (vec_JsonData[i]["actor"]["login"].asString() == strUserName) //ÅĞ¶Ï²éÕÒµ½µÄÖµÊÇ·ñÓëĞèÒªµÄÊı¾İÆ¥Åä
+		{
+			if (vec_JsonData[i]["type"].asString() == strEventType) //ÅĞ¶Ï²éÕÒµ½µÄÖµÊÇ·ñÓëĞèÒªµÄÊı¾İÆ¥Åä
+			{
+				++nUserEventNumber;     //ÈôÂú×ãËùÓĞÌõ¼ş£¬¼¼Êõ×Ô¼Ó1
+			}
+		}
+	}
+	return nUserEventNumber;  //·µ»ØÖ¸¶¨ÓÃ»§µÄÖ¸¶¨ÊÂ¼şµÄÊıÁ¿
+}
 
-// å…¥é—¨ä½¿ç”¨æŠ€å·§: 
-//   1. ä½¿ç”¨è§£å†³æ–¹æ¡ˆèµ„æºç®¡ç†å™¨çª—å£æ·»åŠ /ç®¡ç†æ–‡ä»¶
-//   2. ä½¿ç”¨å›¢é˜Ÿèµ„æºç®¡ç†å™¨çª—å£è¿æ¥åˆ°æºä»£ç ç®¡ç†
-//   3. ä½¿ç”¨è¾“å‡ºçª—å£æŸ¥çœ‹ç”Ÿæˆè¾“å‡ºå’Œå…¶ä»–æ¶ˆæ¯
-//   4. ä½¿ç”¨é”™è¯¯åˆ—è¡¨çª—å£æŸ¥çœ‹é”™è¯¯
-//   5. è½¬åˆ°â€œé¡¹ç›®â€>â€œæ·»åŠ æ–°é¡¹â€ä»¥åˆ›å»ºæ–°çš„ä»£ç æ–‡ä»¶ï¼Œæˆ–è½¬åˆ°â€œé¡¹ç›®â€>â€œæ·»åŠ ç°æœ‰é¡¹â€ä»¥å°†ç°æœ‰ä»£ç æ–‡ä»¶æ·»åŠ åˆ°é¡¹ç›®
-//   6. å°†æ¥ï¼Œè‹¥è¦å†æ¬¡æ‰“å¼€æ­¤é¡¹ç›®ï¼Œè¯·è½¬åˆ°â€œæ–‡ä»¶â€>â€œæ‰“å¼€â€>â€œé¡¹ç›®â€å¹¶é€‰æ‹© .sln æ–‡ä»¶
+//»ñÈ¡Ö¸¶¨ÏîÄ¿ÖĞÖ¸¶¨ÊÂ¼şµÄÊıÁ¿
+//´´½¨Ò»¸ö´øÁ½¸ö²ÎÊı£¬·µ»ØÖµÎªintµÄº¯Êı
+//nProjectId£ºĞèÒª²éÑ¯µÄÏîÄ¿Î¨Ò»Ê¶±ğºÅ£¨ID£©£» strEventType£ºĞèÒª²éÑ¯µÄÊÂ¼şÀàĞÍÃû
+int GHAnalysis::CheckProjectEventNumber(int nProjectId, string strEventType) 
+{
+	int nProjectEventNumber = 0;  //³õÊ¼»¯Ö¸¶¨ÏîÄ¿ÖĞÖ¸¶¨ÊÂ¼şµÄÊıÁ¿
+	for (int i = 0; i < vec_JsonData.size();i++)  //vec_JsonData.size()£º»ñÈ¡ÈİÆ÷´óĞ¡£¬Ö±µ½²éÕÒÍêÈİÆ÷ÖĞËùÓĞ²ÎÊı
+	{
+		//.asInt():½«Êı¾İ×ª»»ÎªintÀàĞÍ
+		if (vec_JsonData[i]["repo"]["id"].asInt() == nProjectId)     //ÅĞ¶Ï²éÕÒµ½µÄÖµÊÇ·ñÓëĞèÒªµÄÊı¾İÆ¥Åä
+		{
+			if (vec_JsonData[i]["type"].asString() == strEventType) //ÅĞ¶Ï²éÕÒµ½µÄÖµÊÇ·ñÓëĞèÒªµÄÊı¾İÆ¥Åä
+			{
+				++nProjectEventNumber;  //ÈôÂú×ãËùÓĞÌõ¼ş£¬¼¼Êõ×Ô¼Ó1
+			}
+		}
+	}
+	return nProjectEventNumber; //·µ»ØÖ¸¶¨ÏîÄ¿ÖĞÖ¸¶¨ÊÂ¼şµÄÊıÁ¿
+}
+
+//»ñÈ¡Ö¸¶¨ÓÃ»§ÔÚÖ¸¶¨ÏîÄ¿ÖĞÖ¸¶¨ÊÂ¼şµÄÊıÁ¿
+//´´½¨Ò»¸ö´øÈı¸ö²ÎÊı£¬·µ»ØÖµÎªintµÄº¯Êı
+//strUserName£ºĞèÒª²éÑ¯µÄÓÃ»§Ãû£» nProjectId£ºĞèÒª²éÑ¯µÄÏîÄ¿Î¨Ò»Ê¶±ğºÅ£¨ID£©£» strEventType£ºĞèÒª²éÑ¯µÄÊÂ¼şÀàĞÍÃû
+int GHAnalysis::CheckUserProjectEventNumber(string strUserName, int nProjectId, string strEventType)
+{
+	int nUserProjectEventNumber = 0;  //³õÊ¼»¯Ö¸¶¨ÓÃ»§ÔÚÖ¸¶¨ÏîÄ¿ÖĞÖ¸¶¨ÊÂ¼şµÄÊıÁ¿
+	for (int i = 0; i < vec_JsonData.size();i++)  //vec_JsonData.size()£º»ñÈ¡ÈİÆ÷´óĞ¡£¬Ö±µ½²éÕÒÍêÈİÆ÷ÖĞËùÓĞ²ÎÊı
+	{
+		if (vec_JsonData[i]["actor"]["login"].asString() == strUserName)  //ÅĞ¶Ï²éÕÒµ½µÄÖµÊÇ·ñÓëĞèÒªµÄÊı¾İÆ¥Åä
+		{
+			if (vec_JsonData[i]["repo"]["id"].asInt() == nProjectId)  //ÅĞ¶Ï²éÕÒµ½µÄÖµÊÇ·ñÓëĞèÒªµÄÊı¾İÆ¥Åä
+			{
+				if (vec_JsonData[i]["type"].asString() == strEventType)  //ÅĞ¶Ï²éÕÒµ½µÄÖµÊÇ·ñÓëĞèÒªµÄÊı¾İÆ¥Åä
+				{
+					++nUserProjectEventNumber;  //ÈôÂú×ãËùÓĞÌõ¼ş£¬¼¼Êõ×Ô¼Ó1
+				}
+			}
+		}
+	}
+	return nUserProjectEventNumber; //·µ»ØÖ¸¶¨ÓÃ»§ÔÚÖ¸¶¨ÏîÄ¿ÖĞÖ¸¶¨ÊÂ¼şµÄÊıÁ¿
+}
